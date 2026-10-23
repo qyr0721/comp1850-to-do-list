@@ -17,136 +17,130 @@ import json
 
 
 def get_next_id(tasks):
-    """返回下一个可用的任务编号。
-
-    规则：取当前所有任务中最大的 id 加 1；
-    空列表则返回 1。删除任务后不复用编号。
-
-    Args:
-        tasks (list[dict]): 当前任务列表。
-
-    Returns:
-        int: 下一个唯一任务编号。
-    """
-    pass
+    """返回下一个可用的任务编号。空列表返回 1。"""
+    if not tasks:
+        return 1
+    return max(t["id"] for t in tasks) + 1
 
 
 def add_task(tasks, description, priority=2):
-    """向任务列表中添加一条新任务。
-
-    Args:
-        tasks (list[dict]): 当前任务列表（会被原地修改）。
-        description (str): 任务描述文字。
-        priority (int): 优先级，1=高, 2=中, 3=低。默认为 2。
-
-    Returns:
-        int: 新创建任务的 id。
-    """
-    pass
+    """向任务列表中添加一条新任务，返回新任务的 id。"""
+    new_id = get_next_id(tasks)
+    task = {
+        "id": new_id,
+        "description": description,
+        "priority": priority,
+        "completed": False
+    }
+    tasks.append(task)
+    return new_id
 
 
 def view_tasks(tasks):
-    """在屏幕上打印所有任务，以表格形式显示。
-
-    格式示例：
-        ID  | Pri | Done | Description
-        ----+-----+------+------------------
-         1  |  2  |  No  | Buy milk
-         2  |  1  | Yes  | Finish report
-
-    空列表时打印提示信息，不崩溃。
-
-    Args:
-        tasks (list[dict]): 要显示的任务列表。
-
-    Returns:
-        None
-    """
-    pass
+    """在屏幕上打印所有任务。空列表时打印提示信息。"""
+    if not tasks:
+        print("No tasks in the list.")
+        return
+    print(f"{'ID':<5} {'Pri':<5} {'Done':<6} Description")
+    print("-" * 45)
+    for t in tasks:
+        done = "Yes" if t["completed"] else "No"
+        print(f"{t['id']:<5} {t['priority']:<5} {done:<6} {t['description']}")
 
 
 def mark_complete(tasks, task_id):
-    """把指定 id 的任务标记为已完成。
-
-    Args:
-        tasks (list[dict]): 当前任务列表。
-        task_id (int): 要标记完成的任务编号。
-
-    Returns:
-        bool: 找到并标记成功返回 True；编号不存在返回 False。
-    """
-    pass
+    """把指定 id 的任务标记为已完成。成功返回 True，找不到返回 False。"""
+    for t in tasks:
+        if t["id"] == task_id:
+            t["completed"] = True
+            return True
+    return False
 
 
 def delete_task(tasks, task_id):
-    """从任务列表中删除指定 id 的任务。
-
-    Args:
-        tasks (list[dict]): 当前任务列表（会被原地修改）。
-        task_id (int): 要删除的任务编号。
-
-    Returns:
-        bool: 找到并删除成功返回 True；编号不存在返回 False。
-    """
-    pass
+    """删除指定 id 的任务。成功返回 True，找不到返回 False。"""
+    for i, t in enumerate(tasks):
+        if t["id"] == task_id:
+            tasks.pop(i)
+            return True
+    return False
 
 
 def save_tasks(tasks, filename="tasks.json"):
-    """把任务列表保存到 JSON 文件。
-
-    Args:
-        tasks (list[dict]): 要保存的任务列表。
-        filename (str): 目标文件路径，默认为 "tasks.json"。
-
-    Returns:
-        bool: 保存成功返回 True；写入失败返回 False。
-    """
-    pass
+    """把任务列表保存到 JSON 文件。成功返回 True。"""
+    try:
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(tasks, f, indent=2, ensure_ascii=False)
+        return True
+    except Exception:
+        return False
 
 
 def load_tasks(filename="tasks.json"):
-    """从 JSON 文件加载任务列表。
-
-    Args:
-        filename (str): 要读取的文件路径，默认为 "tasks.json"。
-
-    Returns:
-        list[dict]: 加载到的任务列表；文件不存在或解析失败时返回空列表 []。
-    """
-    pass
+    """从 JSON 文件加载任务列表。文件不存在或解析失败返回空列表。"""
+    try:
+        with open(filename, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
 
 
 def sort_tasks(tasks):
-    """按优先级从高到低（1 → 2 → 3）排序列表，返回新列表。
-
-    不修改原列表。同优先级的任务保持原有顺序。
-
-    Args:
-        tasks (list[dict]): 待排序的任务列表。
-
-    Returns:
-        list[dict]: 按优先级排序后的新任务列表。
-    """
-    pass
+    """按优先级从高到低（1→2→3）排序，返回新列表，不修改原列表。"""
+    return sorted(tasks, key=lambda t: t["priority"])
 
 
 def main():
-    """主程序入口：显示菜单、读取用户输入、调用对应功能函数。
+    """主程序入口：显示菜单、读取用户输入、调用对应功能函数。"""
+    tasks = load_tasks()
+    while True:
+        print("\n===== To-Do List =====")
+        print("1. Add task")
+        print("2. View tasks")
+        print("3. Mark complete")
+        print("4. Delete task")
+        print("5. Sort by priority")
+        print("6. Save to file")
+        print("7. Load from file")
+        print("0. Exit")
+        choice = input("Choose: ").strip()
 
-    菜单循环直到用户选择退出：
-        1. 添加任务
-        2. 查看任务
-        3. 标记完成
-        4. 删除任务
-        5. 按优先级查看
-        6. 保存到文件
-        7. 从文件加载
-        0. 退出
-
-    Returns:
-        None
-    """
-    pass
+        if choice == "1":
+            desc = input("Task description: ")
+            raw = input("Priority (1=high, 2=medium, 3=low) [2]: ")
+            pri = int(raw) if raw else 2
+            new_id = add_task(tasks, desc, pri)
+            print(f"Added task #{new_id}")
+        elif choice == "2":
+            view_tasks(tasks)
+        elif choice == "3":
+            raw = input("Task ID to mark complete: ")
+            if raw.isdigit() and mark_complete(tasks, int(raw)):
+                print("Marked as done!")
+            else:
+                print("Task not found.")
+        elif choice == "4":
+            raw = input("Task ID to delete: ")
+            if raw.isdigit() and delete_task(tasks, int(raw)):
+                print("Deleted!")
+            else:
+                print("Task not found.")
+        elif choice == "5":
+            view_tasks(sort_tasks(tasks))
+        elif choice == "6":
+            if save_tasks(tasks):
+                print("Saved!")
+            else:
+                print("Save failed.")
+        elif choice == "7":
+            tasks = load_tasks()
+            print(f"Loaded {len(tasks)} tasks.")
+        elif choice == "0":
+            save_tasks(tasks)
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid choice, try again.")
 
 
 if __name__ == "__main__":
